@@ -74,6 +74,8 @@ cat input.css | postcss [OPTIONS] > output.css
 
 ### [Config](https://github.com/michael-ciniawsky/postcss-load-config)
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/postcss/postcss-cli.svg)](https://greenkeeper.io/)
+
 If you need to pass options to your plugins, or have a long plugin chain, you'll want to use a configuration file.
 
 **postcss.config.js**

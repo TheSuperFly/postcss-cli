@@ -79,6 +79,8 @@ Promise.resolve()
 
     input = i
 
+    truncateDestinationFile()
+
     return files(input)
   })
   .then(results => {
@@ -97,11 +99,15 @@ Promise.resolve()
         .on('change', file => {
           let recompile = []
 
-          if (~input.indexOf(file)) recompile.push(file)
+          if (!shouldAppendCSS()) {
+            if (~input.indexOf(file)) recompile.push(file)
 
-          recompile = recompile.concat(
-            depGraph.dependantsOf(file).filter(file => ~input.indexOf(file))
-          )
+            recompile = recompile.concat(
+              depGraph.dependantsOf(file).filter(file => ~input.indexOf(file)),
+            )
+          } else {
+            truncateDestinationFile()
+          }
 
           if (!recompile.length) recompile = input
 
@@ -307,3 +313,19 @@ function shouldAppendCSS() {
   return hasMultipleFiles && hasOutputFile
 }
 
+function truncateDestinationFile() {
+  Promise.resolve()
+    .then(() => {
+      return fs.pathExists(output)
+    })
+    .then((exists) => {
+      if (exists) {
+        fs.truncate(output, err => {
+          if (err) return error('Output Error : Cannot truncate output file.')
+        })
+      }
+    })
+    .catch(ex => {
+      return error(ex);
+    })
+}

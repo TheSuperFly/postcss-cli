@@ -138,6 +138,8 @@ function rc(ctx, path) {
 function files(files) {
   if (typeof files === 'string') files = [files]
 
+  const appendCSS = shouldAppendCSS()
+
   return Promise.all(
     files.map(file => {
       if (file === 'stdin') {
@@ -147,12 +149,12 @@ function files(files) {
         })
       }
 
-      return read(file).then(content => css(content, file))
+      return read(file).then(content => css(content, file, appendCSS))
     })
   )
 }
 
-function css(css, file) {
+function css(css, file, appendCSS) {
   const ctx = { options: config.options }
 
   if (file !== 'stdin') {
@@ -210,7 +212,11 @@ function css(css, file) {
           const tasks = []
 
           if (options.to) {
-            tasks.push(fs.outputFile(options.to, result.css))
+            if (appendCSS) {
+              tasks.push(fs.appendFile(options.to, result.css))
+            } else {
+              tasks.push(fs.outputFile(options.to, result.css))
+            }
 
             if (result.map) {
               tasks.push(
@@ -293,3 +299,11 @@ function error(err) {
   }
   process.exit(1)
 }
+
+function shouldAppendCSS() {
+  const hasOutputFile = !!argv.output
+  const hasMultipleFiles = (input.length > 1)
+
+  return hasMultipleFiles && hasOutputFile
+}
+
